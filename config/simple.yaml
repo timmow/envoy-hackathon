@@ -33,6 +33,7 @@ static_resources:
                   cluster: service_google
           http_filters:
           - name: envoy.router
+
   - name: listener_ro
     address:
       socket_address:
@@ -60,7 +61,15 @@ static_resources:
                 route:
                   cluster: service_ro
           http_filters:
+          - name: envoy.lua
+            typed_config:
+              "@type": type.googleapis.com/envoy.config.filter.http.lua.v2.Lua
+              inline_code: |
+                local entrypoint = require('./entrypoint')
+                envoy_on_request = entrypoint.envoy_on_request
+                envoy_on_response = entrypoint.envoy_on_response
           - name: envoy.router
+            typed_config: {}
 
   clusters:
   - name: service_google
