@@ -61,6 +61,7 @@ static_resources:
                   cluster: service_ro
           http_filters:
           - name: envoy.router
+
   clusters:
   - name: service_google
     connect_timeout: 0.25s
@@ -93,7 +94,7 @@ static_resources:
         - endpoint:
             address:
               socket_address:
-                address: envoy-hackathon_http_echo_rw_1
+                address: http_echo_rw
                 port_value: 8080
   - name: service_ro
     connect_timeout: 1s
@@ -108,5 +109,5 @@ static_resources:
         - endpoint:
             address:
               socket_address:
-                address: envoy-hackathon_http_echo_ro_1
+                address: http_echo_ro
                 port_value: 8080
