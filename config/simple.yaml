@@ -33,6 +33,31 @@ static_resources:
                   cluster: service_google
           http_filters:
           - name: envoy.router
+  - name: listener_ro
+    address:
+      socket_address:
+        protocol: TCP
+        address: 0.0.0.0
+        port_value: 10001
+    filter_chains:
+    - filters:
+      - name: envoy.http_connection_manager
+        typed_config:
+          "@type": type.googleapis.com/envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager
+          stat_prefix: ingress_http
+          route_config:
+            name: local_route
+            virtual_hosts:
+            - name: local_service
+              domains: ["*"]
+              routes:
+              - match:
+                  prefix: "/"
+                route:
+                  host_rewrite: www.google.com
+                  cluster: service_ro
+          http_filters:
+          - name: envoy.router
   clusters:
   - name: service_google
     connect_timeout: 0.25s
@@ -49,5 +74,38 @@ static_resources:
               socket_address:
                 address: www.google.com
                 port_value: 443
+    tls_context:
+      sni: www.google.com
+
+  - name: service_rw
+    connect_timeout: 0.25s
+    type: LOGICAL_DNS
+    # Comment out the following line to test on v6 networks
+    dns_lookup_family: V4_ONLY
+    lb_policy: ROUND_ROBIN
+    load_assignment:
+      cluster_name: service_rw
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: envoy-hackathon_rw_1
+                port_value: 8080
+  - name: service_ro
+    connect_timeout: 1s
+    type: LOGICAL_DNS
+    # Comment out the following line to test on v6 networks
+    dns_lookup_family: V4_ONLY
+    lb_policy: ROUND_ROBIN
+    load_assignment:
+      cluster_name: service_ro
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: envoy-hackathon_r0_1
+                port_value: 8080
     tls_context:
       sni: www.google.com
