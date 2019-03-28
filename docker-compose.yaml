@@ -5,3 +5,17 @@ services:
     ports:
       - "9901:9901"
       - "10000:10000"
+
+  http_echo_ro:
+    build: http_echo
+    environment:
+      SERVICE_CAPABILITY: ro
+    expose:
+      - "8080"
+
+  http_echo_rw:
+    build: http_echo
+    environment:
+      SERVICE_CAPABILITY: rw
+    expose:
+      - "8080"
