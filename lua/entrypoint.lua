@@ -16,6 +16,12 @@ local function envoy_on_request(request_handle)
                 "access denied")
         end
     end
+
+    -- Set X-Mode header
+    local method = request_handle:headers():get(":method")
+    if method == 'POST' then
+        request_handle:headers():add("x-mode", "rw")
+    end
 end
 
 local function envoy_on_response(response_handle)
