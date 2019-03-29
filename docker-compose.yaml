@@ -36,3 +36,6 @@ services:
       - "9411"
     ports:
       - "9411:9411"
+
+  sfx_agent:
+    build: sfx

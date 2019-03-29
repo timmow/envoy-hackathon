@@ -1,0 +1,16 @@
+---
+signalFxAccessToken: {"#from": "/etc/signalfx/token"}
+ingestUrl: {"#from": "/etc/signalfx/ingest_url", default: "https://ingest.signalfx.com"}
+apiUrl: {"#from": "/etc/signalfx/api_url", default: "https://api.signalfx.com"}
+
+intervalSeconds: 10
+
+logging:
+  level: info
+
+monitors:
+  - {"#from": "/etc/signalfx/monitors/*.yaml", flatten: true, optional: true}
+  - type: prometheus-exporter
+    host: "envoy"
+    port: 9901
+    metricPath: "/stats?format=prometheus"
