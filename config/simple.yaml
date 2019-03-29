@@ -42,6 +42,15 @@ static_resources:
                 local entrypoint = require('./entrypoint')
                 envoy_on_request = entrypoint.envoy_on_request
                 envoy_on_response = entrypoint.envoy_on_response
+          - name: envoy.filters.http.header_to_metadata
+            config:
+              request_rules:
+                - header: x-mode
+                  on_header_present:
+                    metadata_namespace: envoy.lb
+                    key: type
+                    type: STRING
+
           - name: envoy.router
             typed_config: {}
 
@@ -50,6 +59,11 @@ static_resources:
     connect_timeout: 0.25s
     type: STRICT_DNS
     dns_lookup_family: V4_ONLY
+    lb_subset_config:
+        fallback_policy: DEFAULT_SUBSET
+        subset_selectors:
+          - keys:
+            - type
     lb_policy: ROUND_ROBIN
     load_assignment:
       cluster_name: service_echo
@@ -60,8 +74,12 @@ static_resources:
               socket_address:
                 address: http_echo_rw
                 port_value: 8080
+          metadata:
+            filter_metadata: {"envoy.lb": {"type": "rw"}}
         - endpoint:
             address:
               socket_address:
                 address: http_echo_ro
                 port_value: 8080
+          metadata:
+            filter_metadata: {"envoy.lb": {"type": "ro"}}
