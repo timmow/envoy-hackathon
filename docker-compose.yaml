@@ -5,18 +5,34 @@ services:
     ports:
       - "9901:9901"
       - "10000:10000"
-      - "10001:10001"
 
-  http_echo_ro:
+  srv_echo_ro:
     build: http_echo
     environment:
+      SERVICE_NAME: echo_ro
       SERVICE_CAPABILITY: ro
     expose:
       - "8080"
 
-  http_echo_rw:
+  srv_echo_rw:
     build: http_echo
     environment:
+      SERVICE_NAME: echo_rw
       SERVICE_CAPABILITY: rw
     expose:
       - "8080"
+
+  srv_echo_subreq:
+    build: http_echo
+    environment:
+      SERVICE_NAME: echo_subreq
+      SERVICE_CAPABILITY: none
+    expose:
+      - "8080"
+
+  zipkin:
+    image: openzipkin/zipkin
+    expose:
+      - "9411"
+    ports:
+      - "9411:9411"

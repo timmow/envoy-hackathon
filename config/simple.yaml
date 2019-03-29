@@ -19,6 +19,9 @@ static_resources:
       - name: envoy.http_connection_manager
         typed_config:
           "@type": type.googleapis.com/envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager
+          generate_request_id: true
+          tracing:
+            operation_name: egress
           access_log:
           - name: envoy.file_access_log
             config:
@@ -50,7 +53,6 @@ static_resources:
                     metadata_namespace: envoy.lb
                     key: type
                     type: STRING
-
           - name: envoy.router
             typed_config: {}
 
@@ -71,15 +73,31 @@ static_resources:
       - lb_endpoints:
         - endpoint:
             address:
-              socket_address:
-                address: http_echo_rw
-                port_value: 8080
+              socket_address: {"address": "srv_echo_rw", "port_value": 8080}
           metadata:
             filter_metadata: {"envoy.lb": {"type": "rw"}}
         - endpoint:
             address:
-              socket_address:
-                address: http_echo_ro
-                port_value: 8080
+              socket_address: {"address": "srv_echo_ro", "port_value": 8080}
           metadata:
             filter_metadata: {"envoy.lb": {"type": "ro"}}
+
+  - name: zipkin
+    connect_timeout: 1s
+    type: strict_dns
+    lb_policy: round_robin
+    load_assignment:
+      cluster_name: zipkin
+      endpoints:
+        - lb_endpoints:
+          - endpoint:
+              address:
+                socket_address: {"address": "zipkin", "port_value": 9411}
+
+tracing:
+  http:
+    name: envoy.zipkin
+    typed_config:
+      "@type": type.googleapis.com/envoy.config.trace.v2.ZipkinConfig
+      collector_cluster: zipkin
+      collector_endpoint: "/api/v1/spans"
