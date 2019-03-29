@@ -43,13 +43,19 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	// Make a sub request
 	subreqData := func() string {
-		req, err := http.NewRequest("GET", "http://srv_echo_subreq:8080/hello", nil)
+		// retrieve span from context (created by server middleware)
+		span := zipkin.SpanFromContext(r.Context())
+
+		newReq, err := http.NewRequest("GET", "http://srv_echo_subreq:8080/hello", nil)
 		if err != nil {
 			log.Printf("unable to create http request: %+v\n", err)
 			return ""
 		}
 
-		res, err := zipkinHTTPClient.DoWithAppSpan(req, "hello_function")
+		ctx := zipkin.NewContext(newReq.Context(), span)
+		newReq = newReq.WithContext(ctx)
+
+		res, err := zipkinHTTPClient.DoWithAppSpan(newReq, "hello_function")
 		if err != nil {
 			log.Printf("unable to do http request: %+v\n", err)
 			return ""
